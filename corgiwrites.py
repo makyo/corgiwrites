@@ -1,9 +1,21 @@
 from flask import (
     Flask,
 )
+from flask.ext.mongoengine import MongoEngine
+
+import datetime
+import os
+import random
+
 
 app = Flask(__name__)
-app.config.from_object(__name__)
+app.config["MONGODB_SETTINGS"] = {'DB': 'corgiwrites'}
+app.config["SECRET_KEY"] = os.urandom(12)
+app.config["DEBUG"] = True
+
+db = MongoEngine(app)
+
+import models
 
 @app.route('/')
 def front():
