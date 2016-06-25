@@ -1,9 +1,16 @@
 from flask import (
     Flask,
+    flash,
+    g,
+    session,
+    redirect,
+    render_template,
+    request,
 )
 from flask.ext.mongoengine import MongoEngine
 
 import datetime
+import hashlib
 import os
 import random
 
@@ -24,20 +31,40 @@ def front():
     else:
         # redirect to the dashboard
 
-@app.route('/login')
-def login(username, password):
-    if username is not None and password is not None:
-        # look up in the database if the password matches for the username
-        if password_matches:
-            # log the user in
-        else:
-            # display an error and the login form
-    else:
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
         # display the login form
+    else:
+        username = request.form.get('username', None)
+        password = request.form.get('password', None)
+        if username is not None and password is not None:
+            # look up in the database if the password matches for the username
+            user = models.User.objects.get(username=username)
+            if user is None:
+                # display an error and the login form
+                flash.message = "User doesn't exist"
+                return redirect('/login')
+            if user.password == hashlib.sha256(password).hexdigest():
+                # log the user in
+                session.is_logged_in = True
+                session.username = username
+                return redirect('/dashboard')
+            else:
+                # display an error and the login form
+                flash.message = "Wrong password"
+                return redirect('/login')
+        else:
+            # display the login form
+            flash.message = 'Both username and password are required'
+            return redirect('/login')
 
 @app.route('/logout')
 def logout():
     # log the user out
+    session.is_logged_in = False
+    session.username = None
+    return redirect('/')
 
 @app.route('/register')
 def register(username, password, email):
