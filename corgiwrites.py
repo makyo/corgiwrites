@@ -66,16 +66,37 @@ def logout():
     session.username = None
     return redirect('/')
 
-@app.route('/register')
-def register(username, password, email):
-    user_exists = database_lookup(username)
-    if user_exists is None:
-        # start the registration process
-        # create a user in the database with the provided username and password and email
-        # save the user
-        # send them to the login screen
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        # display the register form
     else:
-        # Warn the user that the username is taken and start over
+        username = request.form.get('username', None)
+        email = request.form.get('email', None)
+        password = request.form.get('password', None)
+        password_confirm = request.form.get('password_confirm', None)
+        if username is None or email is None or password is None:
+            flash.message = "All fields are required"
+            return redirect('/register')
+        if password != password_confirm:
+            flash.message = "Please enter your password correctly both times"
+            return redirect('/register')
+        user_exists = models.User.objects.get(username=username)
+        if user_exists is None:
+            # start the registration process
+            # create a user in the database with the provided username and password and email
+            user = User()
+            user.username = username
+            user.email = email
+            user.password = hashlib.sha256(password).hexdigest()
+            # save the user
+            user.save()
+            # send them to the login screen
+            return redirect('/login')
+        else:
+            # Warn the user that the username is taken and start over
+            flash.message = "That username already exists in the database!"
+            return redirect('/register')
 
 @app.route('/story/create')
 def create_story(title, genre, summary):
