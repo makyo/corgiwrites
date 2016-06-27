@@ -85,7 +85,7 @@ def register():
         if user_exists is None:
             # start the registration process
             # create a user in the database with the provided username and password and email
-            user = User()
+            user = models.User()
             user.username = username
             user.email = email
             user.password = hashlib.sha256(password).hexdigest()
@@ -98,13 +98,34 @@ def register():
             flash.message = "That username already exists in the database!"
             return redirect('/register')
 
-@app.route('/story/create')
-def create_story(title, genre, summary):
-    if user not logged_in:
-        # redirect to the login page
-        return
-    # save the information to the database
-    # send the user to the story page
+@app.route('/story/create', methods=['GET', 'POST'])
+def create_story():
+    if not session.is_logged_in:
+        return redirect('/login')
+    user = models.User.objects.get(username=session.username)
+    if request.method == 'GET':
+        # show them the story creation form
+    else:
+        # save the information to the database
+        title = request.form.get('title', None)
+        if title is None:
+            flash.message = "Title is required"
+            return redirect('/story/create')
+        story = models.Story()
+        story.title = title
+        story.genre = request.form.get('genre', None)
+        story.summary = request.form.get('summary', None)
+        story.status = request.form.get('status', None)
+        wordcount_text = request.form.get('wordcount', None)
+        if wordcount_text is not None:
+            wc_entry = models.WordCountEntry()
+            wc_entry.wordcount = int(wordcount_text)
+            story.wordcounts.append(wc_entry)
+        user.stories.append(story)
+        user.save()
+        # send the user to the story page
+        # XXX need to come up with a story id somehow
+        return redirect('/story/fakestoryid')
 
 @app.route('/story/<int:story_id>')
 def view_story(story_id):
