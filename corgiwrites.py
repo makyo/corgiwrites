@@ -145,20 +145,45 @@ def update_story_wordcount():
         return
     pass
 
-@app.route('/market/create')
-def create_market(name, url, genre, wordcount):
-    if user not logged_in:
-        # redirect to the login page
-        return
-    # save the information to the database
-    # send the user to the market page
+@app.route('/market/create', methods=['GET', 'POST'])
+def create_market():
+    if not session.is_logged_in:
+        return redirect('/login')
+    if request.method == 'GET':
+        # show them the market creation form
+    else:
+        market_name = request.form.get('name', None)
+        if market_name is None:
+            flash.message = "Market name is required"
+            return redirect('/market/create')
+        market = models.Market()
+        market.name = market_name
+        market.url = request.form.get('url', None)
+        market.genre = request.form.get('genre', None)
+        market.wordcount = int(request.form.get('wordcount', 0))
+        # set the expiry date
+        year = int(request.form.get('year', 0))
+        month = int(request.form.get('month', 0))
+        day = int(request.form.get('day', 0))
+        if year > 0 and month > 0 and day > 0:
+            market.expires = datetime.date(year, month, day)
+        # save the information to the database
+        market.save()
+        # send the user to the market page
+        return redirect('/market/fakemarketid')
 
 @app.route('/market/<int:market_id>')
 def view_market(market_id):
-    if user not logged_in:
-        # redirect to the login page
-        return
-    pass
+    market = models.Market.objects.get(id=market_id)
+    if market is None:
+        # show the user a 404 page
+        return None
+    today = datetime.date.today()
+    diff = today - market.expires
+    if diff > 0:
+        market.is_active = False
+        market.save()
+    # show the user the page for the market
 
 @app.route('/story/submit')
 def submit_story(story_id, market_id):
