@@ -185,17 +185,38 @@ def view_market(market_id):
         market.save()
     # show the user the page for the market
 
-@app.route('/story/submit')
-def submit_story(story_id, market_id):
-    if user not logged_in:
-        # redirect to the login page
-        return
-    market = database_lookup(market_id)
+@app.route('/story/submit', methods=['POST'])
+def submit_story():
+    if not session.is_logged_in:
+        return redirect('/login')
+    user = methods.User.objects.get(username=session.username)
+    story_id = request.forms.get('story_id', None)
+    market_id = request.forms.get('market_id', None)
+    if story_id is None:
+        flash.message = "Something went wrong and we didn't receive the data we were expecting!"
+        return redirect('/dashboard')
+    if market_id is None:
+        flash.message = "Market id is required"
+        return redirect('/story/fakestoryid')
+    story = None
+    for s in user.stories:
+        if s.id == story_id:
+            story = s
+    if story is None:
+        flash.message = "That story wasn't found"
+        return redirect('/dashboard')
+    market = models.Market.objects.get(id=market_id)
     if market is not None:
         # add the story to the market by creating a submission in the database, with the status of 'waiting' and the current date
+        submission = models.Submission()
+        submission.market = market
+        submission.status = 'waiting'
+        story.submissions.append(submission)
+        user.save()
         # redirect to the story page
-    else:
-        # provide an error and redirect to the market create page
+        return redirect('/story/fakestoryid')
+    flash.message = "We couldn't find that market!"
+    return redirect('/story/fakestoryid')
 
 @app.route('/submission/<int:submission_id>')
 def update_submission(submission_id):

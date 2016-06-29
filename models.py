@@ -19,6 +19,7 @@ class User(db.Document):
 # }
 
 class Story(db.EmbeddedDocument):
+    id = db.IntField()
     title = db.StringField(max_length=3000)
     genre = db.StringField(max_length=1000)
     summary = db.StringField(max_length=12000)
