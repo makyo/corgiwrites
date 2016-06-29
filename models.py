@@ -27,15 +27,17 @@ class Story(db.EmbeddedDocument):
     submissions = db.ListField(db.EmbeddedDocumentField('Submission'))
 
 class Submission(db.EmbeddedDocument):
-    market = db.EmbeddedDocumentField('Market')
+    market = db.ReferenceField('Market')
     status = db.StringField(max_length=30)
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
 
-class Market(db.EmbeddedDocument):
+class Market(db.Document):
     name = db.StringField(max_length=3000)
     url = db.StringField(max_length=4096)
     genre = db.StringField(max_length=1000)
     wordcount = db.IntField()
+    is_active = db.BooleanField(default=True)
+    expires = db.DateField()
 
 class WordCountEntry(db.EmbeddedDocument):
     wordcount = db.IntField()
