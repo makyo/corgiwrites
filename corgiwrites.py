@@ -47,8 +47,8 @@ def login():
                 return redirect('/login')
             if user.password == hashlib.sha256(password).hexdigest():
                 # log the user in
-                session.is_logged_in = True
-                session.username = username
+                session['is_logged_in'] = True
+                session['username'] = username
                 return redirect('/dashboard')
             else:
                 # display an error and the login form
@@ -62,8 +62,8 @@ def login():
 @app.route('/logout')
 def logout():
     # log the user out
-    session.is_logged_in = False
-    session.username = None
+    session['is_logged_in'] = False
+    session['username'] = None
     return redirect('/')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -100,9 +100,9 @@ def register():
 
 @app.route('/story/create', methods=['GET', 'POST'])
 def create_story():
-    if not session.is_logged_in:
+    if not session['is_logged_in']:
         return redirect('/login')
-    user = models.User.objects.get(username=session.username)
+    user = models.User.objects.get(username=session['username'])
     if request.method == 'GET':
         # show them the story creation form
     else:
@@ -121,22 +121,23 @@ def create_story():
             wc_entry = models.WordCountEntry()
             wc_entry.wordcount = int(wordcount_text)
             story.wordcounts.append(wc_entry)
+        story.save()
         user.stories.append(story)
         user.save()
         # send the user to the story page
-        # XXX need to come up with a story id somehow
-        return redirect('/story/fakestoryid')
+        return redirect('/story/%s' % story.id)
 
-@app.route('/story/<int:story_id>')
+@app.route('/story/view/<story_id>')
 def view_story(story_id):
-    if user not logged_in:
-        # redirect to the login page
-        return
-    story = database_lookup(story_id)
-    if story is not None:
-         # display information about the story
-     else:
-         # return a 404
+    if not session['is_logged_in']:
+        return redirect('/login')
+    story = models.Story.objects.get(id=story_id)
+    if story is None:
+        # TODO corgiw - find out how to show the user a 404 page
+        # return a 404
+    if story.owner.username is not session['username']:
+        # return a 404
+    # show the user the story
 
 @app.route('/story/wordcount/update')
 def update_story_wordcount():
@@ -147,7 +148,7 @@ def update_story_wordcount():
 
 @app.route('/market/create', methods=['GET', 'POST'])
 def create_market():
-    if not session.is_logged_in:
+    if not session['is_logged_in']:
         return redirect('/login')
     if request.method == 'GET':
         # show them the market creation form
@@ -170,9 +171,10 @@ def create_market():
         # save the information to the database
         market.save()
         # send the user to the market page
+        # TODO corgiw use the proper market ID here
         return redirect('/market/fakemarketid')
 
-@app.route('/market/<int:market_id>')
+@app.route('/market/view/<market_id>')
 def view_market(market_id):
     market = models.Market.objects.get(id=market_id)
     if market is None:
@@ -187,9 +189,9 @@ def view_market(market_id):
 
 @app.route('/story/submit', methods=['POST'])
 def submit_story():
-    if not session.is_logged_in:
+    if not session['is_logged_in']:
         return redirect('/login')
-    user = methods.User.objects.get(username=session.username)
+    user = methods.User.objects.get(username=session['username'])
     story_id = request.forms.get('story_id', None)
     market_id = request.forms.get('market_id', None)
     if story_id is None:
@@ -197,6 +199,7 @@ def submit_story():
         return redirect('/dashboard')
     if market_id is None:
         flash.message = "Market id is required"
+        # TODO corgiw use the proper story ID
         return redirect('/story/fakestoryid')
     story = None
     for s in user.stories:
@@ -216,6 +219,7 @@ def submit_story():
         # redirect to the story page
         return redirect('/story/fakestoryid')
     flash.message = "We couldn't find that market!"
+    # TODO corgiw use the proper story ID here
     return redirect('/story/fakestoryid')
 
 @app.route('/submission/<int:submission_id>')
