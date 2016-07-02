@@ -10,7 +10,7 @@ class User(db.Document):
     stories = db.ListField(db.ReferenceField('Story'))
 
 class Story(db.Document):
-    # id = ObjectIDField()
+    # id = ObjectIDField() asdf
     owner = db.ReferenceField('User')
     title = db.StringField(max_length=3000)
     genre = db.StringField(max_length=1000)
