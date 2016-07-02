@@ -1,5 +1,4 @@
 from flask import (
-    abort
     Flask,
     flash,
     g,
@@ -34,14 +33,8 @@ def front():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    #This is meant to redirect an already logged in user to the dashboard if they go onto this page. Not sure if right though
-    if session['is_logged_in'] = True
-        flash.message = "You are already logged in"
-        return redirect('/dashboard')
-
     if request.method == 'GET':
         # display the login form
-
     else:
         username = request.form.get('username', None)
         password = request.form.get('password', None)
@@ -142,12 +135,8 @@ def view_story(story_id):
     if story is None:
         # TODO corgiw - find out how to show the user a 404 page
         # return a 404
-
-        #Will need to finish the templates I think
-        abort(404)
     if story.owner.username is not session['username']:
         # return a 404
-        abort(404)
     # show the user the story
 
 @app.route('/story/wordcount/update')
@@ -183,7 +172,7 @@ def create_market():
         market.save()
         # send the user to the market page
         # TODO corgiw use the proper market ID here
-        return redirect('/market/<market_id>')
+        return redirect('/market/fakemarketid')
 
 @app.route('/market/view/<market_id>')
 def view_market(market_id):
@@ -231,7 +220,7 @@ def submit_story():
         return redirect('/story/fakestoryid')
     flash.message = "We couldn't find that market!"
     # TODO corgiw use the proper story ID here
-    return redirect('/story/<story_id')
+    return redirect('/story/fakestoryid')
 
 @app.route('/submission/<int:submission_id>')
 def update_submission(submission_id):
