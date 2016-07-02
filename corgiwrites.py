@@ -181,7 +181,7 @@ def create_market():
             market.expires = datetime.date(year, month, day)
         # save the information to the database
         market.save()
-        # send the user to the market page
+        # Send the user to the market ID
         # TODO corgiw use the proper market ID here
         return redirect('/market/<market_id>')
 
