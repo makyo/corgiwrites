@@ -17,9 +17,11 @@ class Story(db.Document):
     summary = db.StringField(max_length=12000)
     wordcounts = db.ListField(db.EmbeddedDocumentField('WordCountEntry'))
     status = db.StringField(max_length=30)
-    submissions = db.ListField(db.EmbeddedDocumentField('Submission'))
+    submissions = db.ListField(db.ReferenceField('Submission'))
 
-class Submission(db.EmbeddedDocument):
+class Submission(db.Document):
+    # id = ObjectIDField()
+    Story = db.ReferenceField('Story')
     market = db.ReferenceField('Market')
     status = db.StringField(max_length=30)
     date = db.DateTimeField(default=datetime.datetime.now, required=True)

@@ -1,3 +1,4 @@
+
 from flask import (
     abort
     Flask,
@@ -154,7 +155,12 @@ def view_story(story_id):
 def update_story_wordcount():
     if user not logged_in:
         # redirect to the login page
-        return
+        return.redirect('\login')
+        # get the current wordcount list
+        wordcount = models.Story.wordcounts.get
+        # get the new wordcount from the user
+        # append the new worcount to the list
+        # return to the story display
     pass
 
 @app.route('/market/create', methods=['GET', 'POST'])
@@ -229,25 +235,28 @@ def submit_story():
         user.save()
         # redirect to the story page
         return redirect('/story/fakestoryid')
-    flash.message = "We couldn't find that market!"
+    else
+        flash.message = "We couldn't find that market!"
     # TODO corgiw use the proper story ID here
-    return redirect('/story/<story_id')
+        return redirect('/story/<story_id')
 
 
-@app.route('/submission/<int:submission_id>', methods=['POST'])
+@app.route('/submission/<submission_id>', methods=['POST'])
 def update_submission(submission_id):
-    if not session ['is_logged_in']:
+    if not session['is_logged_in']:
         # redirect to the login page
         return redircet('/login')
     # get the submission from the database
-    story_eixsts = models.Story.objects.get(id=story_id)
-    if story_exists is not None:
+    submission_exists = models.Submission.objects.get(id=submission_id)
+    if submission_exists is None:
+        abort(404)
     # change the submission status
-        story = models.Story
+    else:
+        submission = models.Submission
         new_status = request.form.get('status', None)
-        story.status = new-status
+        submission.status = new_status
     # save the submission back to the database
-        story.save()
+        submission.save()
     # redirect to the story page
         flash.message = "Story submission has been updated"
         return.redirect("/story/view")
