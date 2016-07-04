@@ -233,15 +233,24 @@ def submit_story():
     # TODO corgiw use the proper story ID here
     return redirect('/story/<story_id')
 
-@app.route('/submission/<int:submission_id>')
+
+@app.route('/submission/<int:submission_id>', methods=['POST'])
 def update_submission(submission_id):
-    if user not logged_in:
+    if not session ['is_logged_in']:
         # redirect to the login page
-        return
+        return redircet('/login')
     # get the submission from the database
+    story_eixsts = models.Story.objects.get(id=story_id)
+    if story_exists is not None:
     # change the submission status
+        story = models.Story
+        new_status = request.form.get('status', None)
+        story.status = new-status
     # save the submission back to the database
+        story.save()
     # redirect to the story page
+        flash.message = "Story submission has been updated"
+        return.redirect("/story/view")
 
 @app.route('/dashboard')
 def dashboard():
